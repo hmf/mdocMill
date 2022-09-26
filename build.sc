@@ -1,6 +1,6 @@
 
 // cSpell:ignore javac, xlint, Yrangepos, Dorg, deps, classpath, RC
-// cSpell:ignore munit
+// cSpell:ignore munit, agg, dep
 
 import mill._
 import mill.api.Loose
@@ -18,15 +18,16 @@ val ivyMunit                = ivy"org.scalameta::munit::$mUnitVersion"
 val ivyMunitInterface = "munit.Framework"
 
 
-
 /**
+ * Example of using MDoc with the projects Scala version. 
+ * @ see [[mdocDep]]
+ * 
  * ./mill -i tutorial.runMain core.HelloWorld
  * ./mill -i --watch tutorial.runMain core.HelloWorld
  * ./mill -i tutorial.mdoc
  * ./mill -i  --watch tutorial.mdoc
  * ./mill -i tutorial.mdoc | grep -i mdoc
  */
-// object tutorial extends ScalaModule with MDocModule {
 object tutorial extends ScalaModule {
   // Also used by mill-mdoc
   override def scalaVersion = T{ ScalaVersion }
@@ -39,7 +40,17 @@ object tutorial extends ScalaModule {
   // def mdocSources = T.sources{ T.workspace / "docs" }  
   def mdocSources = T.sources { super.millSourcePath / "docs" }
 
-  def mdocDep: Task[Agg[Dep]] = T.task{ Agg(ivy"org.scalameta::mdoc:${scalaMdocVersion()}") } 
+  // https://github.com/scalameta/mdoc/issues/702
+  // MDoc has its own dependencies on the Scala compiler and uses those
+  // To use a later version of Scala 3, we need to download that version of the compiler
+  def mdocDep: Task[Agg[Dep]] = T.task{ 
+      Agg(
+        ivy"org.scalameta::mdoc:${scalaMdocVersion()}"
+          .exclude("org.scala-lang" -> "scala3-compiler_3")
+          .exclude("org.scala-lang" -> "scala3-library_3"),
+        ivy"org.scala-lang::scala3-compiler:${scalaVersion()}"
+      )
+    } 
 
   // Only downloads source code
   // resolveDeps(mdocDep, sources = true)
@@ -55,7 +66,8 @@ object tutorial extends ScalaModule {
   def mdoc : T[PathRef] = T {
   
     val rp = mDocLibs().map(_.path)
-    val cp = runClasspath().map(_.path)
+    // val cp = runClasspath().map(_.path)
+    val cp = compileClasspath().map(_.path)
     // println(toArgumentDebug(rp))
     // println(toArgument(cp))
 
