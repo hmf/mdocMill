@@ -35,7 +35,7 @@ object tutorial extends ScalaModule {
   override def scalacOptions = T{ Seq("-deprecation", "-feature") }
 
   // mdoc
-  def scalaMdocVersion = T("2.3.3") // "2.3.4" "2.3.3" "2.2.4"
+  def scalaMdocVersion = T("2.3.4") // "2.3.4" "2.3.3" "2.2.4"
   // def mdocSources = T.sources{ T.workspace / "docs" }  
   def mdocSources = T.sources { super.millSourcePath / "docs" }
 
@@ -57,14 +57,7 @@ object tutorial extends ScalaModule {
     val cp = runClasspath().map(_.path)
     // println(toArgument(rp))
     // println(toArgument(cp))
-
-    // We only add the required libraries. 
-    // Here we debug to check class paths are ok
-    // val s1 = Set(cp.toList:_*)
-    // val s2 = Set(rp.toList:_*)
-    // val s = s1 -- s2
-    // println(toArg(s))
-
+    
     // Set-up parameters to execute MDoc
     val dir = T.dest.toIO.getAbsolutePath
     val dirParams = mdocSources().map(pr => Seq(
