@@ -48,6 +48,7 @@ object tutorial extends ScalaModule {
   val separator = java.io.File.pathSeparatorChar
   def toArgument(p: Agg[os.Path]) = p.mkString(s"$separator")
   def toArg(p: Set[os.Path]) = p.mkString(s"$separator")
+  def toArgumentDebug(p: Agg[os.Path]) = p.mkString(s"\n")
 
   // Correct the bug in the mill-mdoc plugin
   // https://github.com/atooni/mill-mdoc/issues/5
@@ -55,9 +56,9 @@ object tutorial extends ScalaModule {
   
     val rp = mDocLibs().map(_.path)
     val cp = runClasspath().map(_.path)
-    // println(toArgument(rp))
+    // println(toArgumentDebug(rp))
     // println(toArgument(cp))
-    
+
     // Set-up parameters to execute MDoc
     val dir = T.dest.toIO.getAbsolutePath
     val dirParams = mdocSources().map(pr => Seq(
