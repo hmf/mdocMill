@@ -34,7 +34,7 @@ object MdocSession extends _root_.mdoc.internal.document.DocumentBuilder {
 ...
 ```
 
-We must therefore first exclude the Scala 3 compiler related libraries that are dependencies of MDoc. Then we add the compiuler version we are using in our code. Here is the relevant code snippet of the build script:
+We must therefore first exclude the Scala 3 compiler related libraries that are dependencies of MDoc. Then we add the compiler version we are using in our code. Here is the relevant code snippet of the build script:
 
 ```scala 
   def mdocDep: Task[Agg[Dep]] = T.task{ 
@@ -55,7 +55,7 @@ Their are several ways in which to exclude dependent libraries (see the [tests](
 * [By organization only](https://github.com/com-lihaoyi/mill/blob/5fd2543b39448733872d63e9ca44a2ac4c76183a/scalalib/test/src/ResolveDepsTests.scala#L48);
 * [By name only](https://github.com/com-lihaoyi/mill/blob/5fd2543b39448733872d63e9ca44a2ac4c76183a/scalalib/test/src/ResolveDepsTests.scala#L56)
 
-To find out what to exclude we looked at the dependencies in the Maven repository [here](// https://mvnrepository.com/artifact/org.scalameta/mdoc_3/2.3.4). We not that the `scala3-library_3` is a dependency of the compiler and it is therefore not strictly necessary to exclude that. We then add the `scala3-compiler_3` using [a version of our choice](https://mvnrepository.com/artifact/org.scala-lang/scala3-compiler_3/3.2.2-RC1-bin-20220920-b1b1dfd-NIGHTLY).
+To find out what to exclude we looked at the dependencies in the Maven repository [here](https://mvnrepository.com/artifact/org.scalameta/mdoc_3/2.3.4). We not that the `scala3-library_3` is a dependency of the compiler and it is therefore not strictly necessary to exclude that. We then add the `scala3-compiler_3` using [a version of our choice](https://mvnrepository.com/artifact/org.scala-lang/scala3-compiler_3/3.2.2-RC1-bin-20220920-b1b1dfd-NIGHTLY).
 
 
 ## Using only the necessary libraries for MDoc
