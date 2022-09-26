@@ -18,6 +18,10 @@ or this:
 ./mill -i --watch tutorial.mdoc
 ```
 
+# The Mill-MDoc plugin
+
+The code shown here was *"lifted"* from the [Mill-MDoc plugin](https://github.com/atooni/mill-mdoc). This was born of an attempt to correct the ["bug"](https://github.com/atooni/mill-mdoc/issues/5) in the mill-mdoc plugin. The `def mdoc : T[PathRef]` shown below is an altered version of the plugin's. 
+  
 ## Issue with compiler version
 
 Diagnose https://github.com/scalameta/mdoc/issues/702
@@ -63,8 +67,6 @@ To find out what to exclude we looked at the dependencies in the Maven repositor
 Once we have the libraries for MDoc we can invoke it. the relevant code snippet is shown below:
 
 ```scala
-  // Correct the bug in the mill-mdoc plugin
-  // https://github.com/atooni/mill-mdoc/issues/5
   def mdoc : T[PathRef] = T {
   
     val rp = mDocLibs().map(_.path)
@@ -88,4 +90,46 @@ Once we have the libraries for MDoc we can invoke it. the relevant code snippet 
 ```
 
 Note that the `Jvm.runLocal("mdoc.Main", rp, dirParams)` uses the MDoc libraries and the MDoc compiler compiles the code using the project's `runClasspath()`. If this is different from the `compileClasspath()`, then the compilation dependencies should be used.
+
+## Previous attempt
+
+We did alternative tests to download directly via Coursier. We can fo this, but we need to select the correct binary compatible library. For 2.12 we add no extension, for 2.13 we add _2.13 and for 3 we add _3. This allows using libraries that are published for various versions of Scala. However using Coursier's `ResolutionParams` does **not** work. 
+
+To see how Mill parsers and changes the library names see Mill's 
+
+* `ZincWorkerAPI.Util.scalaBinaryVersion(scalaVersion: String)`
+* `scalalib.Lib.depToDependency`
+* `scalalib.Dep.toDependency`
+* `scalalib.CoursierModule.resolveDeps`
+on how Mill parsers and sets the correct library name using the expected 
+conventions
+https://get-coursier.io/docs/api#resolution-parameters
+https://github.com/com-lihaoyi/mill/discussions/2045
+
+
+```scala
+  def mDocLibsTest = 
+      T{
+        import coursier._
+        import coursier.params._
+
+        val params = ResolutionParams()
+                      // .withScalaVersion(ScalaVersion)
+                      .withScalaVersion("3.1.3")    // Download ok with :: but gets version 2.13?
+                      // .withScalaVersion("2.13.8") // Download ok with ::
+
+        // For Scala 2 set explicitly Ok
+        // val files = Fetch().addDependencies(dep"org.scalameta::mdoc:2.3.3").run()
+        // For Scala 3 set explicitly Ok
+        // val files = Fetch().addDependencies(dep"org.scalameta:mdoc_3:2.3.3").run()
+        val files = Fetch()
+                      .addDependencies(dep"org.scalameta::mdoc:2.3.3")  // uses the latest Scala 2 version
+                      .withResolutionParams(params)
+                      .run()
+
+        val pathRefs = files.map(f => PathRef(os.Path(f)))
+        printf(pathRefs.mkString(","))
+        Agg(pathRefs : _*)
+      }
+```
 
