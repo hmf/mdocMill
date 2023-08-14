@@ -11,9 +11,9 @@ import mill.modules.Jvm
 
 
 // https://github.com/scalameta/mdoc/issues/702
-val ScalaVersion         = "3.2.1-RC2" // "3.2.1-RC2" "3.2.1-RC1" "3.2.0" "3.1.3"
+val ScalaVersion         = "3.3.0" // "3.2.1-RC2" "3.2.1-RC1" "3.2.0" "3.1.3"
 
-val mUnitVersion         = "1.0.0-M6" // "1.0.0-M3" https://mvnrepository.com/artifact/org.scalameta/munit
+val mUnitVersion         = "1.0.0-M8" // "1.0.0-M3" https://mvnrepository.com/artifact/org.scalameta/munit
 val ivyMunit                = ivy"org.scalameta::munit::$mUnitVersion"
 val ivyMunitInterface = "munit.Framework"
 
@@ -36,7 +36,7 @@ object tutorial extends ScalaModule {
   override def scalacOptions = T{ Seq("-deprecation", "-feature") }
 
   // mdoc
-  def scalaMdocVersion = T("2.3.4") // "2.3.4" "2.3.3" "2.2.4"
+  def scalaMdocVersion = T("2.3.7") // "2.3.4" "2.3.3" "2.2.4"
   // def mdocSources = T.sources{ T.workspace / "docs" }  
   def mdocSources = T.sources { super.millSourcePath / "docs" }
 
@@ -63,7 +63,7 @@ object tutorial extends ScalaModule {
 
   // Correct the bug in the mill-mdoc plugin
   // https://github.com/atooni/mill-mdoc/issues/5
-  def mdoc : T[PathRef] = T {
+  def mdocLocal : T[PathRef] = T {
   
     val rp = mDocLibs().map(_.path)
     // val cp = runClasspath().map(_.path)
@@ -84,6 +84,33 @@ object tutorial extends ScalaModule {
   
     PathRef(T.dest)
   }
+
+  def mdoc: T[PathRef] = T {
+    //val cp = runClasspath().map(_.path)
+    val cp = compileClasspath().map(_.path)
+    val rp = mDocLibs().map(_.path)
+    val dir = T.dest.toIO.getAbsolutePath
+    val dirParams = mdocSources().map(pr => Seq(
+      s"--in", pr.path.toIO.getAbsolutePath,
+      "--out", dir)
+    ).iterator.flatten
+    val docClasspath = toArgument(cp)
+    val params = Seq("--classpath", s"$docClasspath") ++ dirParams.toSeq
+
+    Jvm.runSubprocess(
+      mainClass = "mdoc.Main",
+      classPath = rp,
+      jvmArgs = forkArgs(),
+      envArgs = forkEnv(),
+      mainArgs = params,
+      // Defaults
+      workingDir = forkWorkingDir(),
+      useCpPassingJar = runUseArgsFile()
+    )
+
+    PathRef(T.dest)
+  }
+
 
   override def ivyDeps = T{ Agg() }
 
