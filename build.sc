@@ -57,9 +57,9 @@ object tutorial extends ScalaModule {
   def mDocLibs = T{ resolveDeps(mdocDep) }
 
   val separator = java.io.File.pathSeparatorChar
-  def toArgument(p: Agg[os.Path]) = p.mkString(s"$separator")
+  def toArgument(p: Agg[os.Path]) = p.iterator.mkString(s"$separator")
   def toArg(p: Set[os.Path]) = p.mkString(s"$separator")
-  def toArgumentDebug(p: Agg[os.Path]) = p.mkString(s"\n")
+  def toArgumentDebug(p: Agg[os.Path]) = p.iterator.mkString(s"\n")
 
   // Correct the bug in the mill-mdoc plugin
   // https://github.com/atooni/mill-mdoc/issues/5
@@ -116,8 +116,8 @@ object tutorial extends ScalaModule {
 
   object test extends Tests with TestModule.Munit {
 
-    def ivyDeps = Agg(ivyMunit)
-    def testFramework = ivyMunitInterface
+    override def ivyDeps = Agg(ivyMunit)
+    //override def testFramework = ivyMunitInterface
   }
 }
 
