@@ -111,12 +111,12 @@ object tutorial extends ScalaModule {
     PathRef(T.dest)
   }
 
-    override def ivyDeps = T{ Agg() }
+  override def ivyDeps = T{ Agg() }
 
   object test extends ScalaTests with TestModule.Munit {
 
     override def ivyDeps = Agg(ivyMunit)
-    override def testFramework = ivyMunitInterface
+    //override def testFramework = ivyMunitInterface
   }
 }
 
